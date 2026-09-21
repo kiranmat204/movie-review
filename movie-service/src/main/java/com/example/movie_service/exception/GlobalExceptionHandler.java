@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-        @ExceptionHandler(ResourceNotFoundException.class)
+        @ExceptionHandler(MovieNotFoundException.class)
         public ResponseEntity<Map<String, String>> handleResourceNotFound(
-                ResourceNotFoundException exception) {
+                MovieNotFoundException exception) {
 
                 Map<String, String> error = Map.of(
                         "error", exception.getMessage()
@@ -22,8 +22,8 @@ public class GlobalExceptionHandler {
                         .body(error);
         }
 
-        @ExceptionHandler(DuplicateResourceException.class)
-        public ResponseEntity<Map<String, String>> handleDuplicateResource(DuplicateResourceException exception) {
+        @ExceptionHandler(DuplicateMovieException.class)
+        public ResponseEntity<Map<String, String>> handleDuplicateResource(DuplicateMovieException exception) {
                 Map<String, String> error = Map.of(
                         "error", exception.getMessage()
                 );

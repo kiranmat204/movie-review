@@ -2,6 +2,9 @@ package com.example.movie_service.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.movie_service.exception.DuplicateResourceException;
-import com.example.movie_service.exception.ResourceNotFoundException;
+import com.example.movie_service.exception.DuplicateMovieException;
+import com.example.movie_service.exception.MovieNotFoundException;
 import com.example.movie_service.model.Movie;
 import com.example.movie_service.repository.MovieRepository;
 
@@ -36,25 +39,29 @@ public class MovieController {
         return movieRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Movie not found")
+                        new MovieNotFoundException("Movie not found")
                 );
     }
 
     // This method creates a new movie
     @PostMapping
-    public Movie createMovie(@RequestBody Movie movie) {
+    public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
 
         // checks for duplicate title and year entries
-       if (movieRepository.existsByTitleIgnoreCaseAndReleaseYear(
-            movie.getTitle(), 
-            movie.getReleaseYear())) {
+        if (movieRepository.existsByTitleIgnoreCaseAndReleaseYear(
+                movie.getTitle(),
+                movie.getReleaseYear())) {
 
-            throw new DuplicateResourceException(
+            throw new DuplicateMovieException(
                     "This movie already exists"
             );
         }
 
-        return movieRepository.save(movie);
+        Movie savedMovie = movieRepository.save(movie);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(savedMovie);
     }
 
     // This method updates movie title/releaseYear/genre
@@ -64,7 +71,7 @@ public class MovieController {
         Movie movie = movieRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Movie not found")
+                        new MovieNotFoundException("Movie not found")
                 );
 
         movie.setTitle(updatedMovie.getTitle());
@@ -72,5 +79,20 @@ public class MovieController {
         movie.setGenre(updatedMovie.getGenre());
 
         return movieRepository.save(movie);
+    }
+
+    // This method deletes a movie by its ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
+
+        Movie movie = movieRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new MovieNotFoundException("Movie not found")
+                );
+
+        movieRepository.delete(movie);
+
+        return ResponseEntity.noContent().build();
     }
 }
