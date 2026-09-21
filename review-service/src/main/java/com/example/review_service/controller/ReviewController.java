@@ -1,8 +1,8 @@
 package com.example.review_service.controller;
 
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.example.review_service.client.MovieClient;
+import com.example.review_service.exception.ReviewNotFoundException;
 import com.example.review_service.model.Review;
 import com.example.review_service.repository.ReviewRepository;
 
@@ -55,8 +57,14 @@ public class ReviewController {
 
         Review savedReview = reviewRepository.save(review);
 
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{reviewId}")
+                .buildAndExpand(savedReview.getId())
+                .toUri();
+
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .created(location)
                 .body(savedReview);
     }
 
@@ -71,13 +79,11 @@ public class ReviewController {
         Review review = reviewRepository
                 .findById(reviewId)
                 .orElseThrow(() ->
-                        new RuntimeException("Review not found")
+                        new ReviewNotFoundException(reviewId)
                 );
 
         if (!review.getMovieId().equals(movieId)) {
-            throw new RuntimeException(
-                    "Review not found for this movie"
-            );
+            throw new ReviewNotFoundException(reviewId, movieId);
         }
 
         reviewRepository.delete(review);

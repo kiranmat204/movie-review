@@ -1,4 +1,4 @@
-package com.example.movie_review.model;
+package com.example.movie_service.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

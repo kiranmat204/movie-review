@@ -1,4 +1,4 @@
-package com.example.movie_review.exception;
+package com.example.movie_service.exception;
 
 public class DuplicateResourceException extends RuntimeException {
 

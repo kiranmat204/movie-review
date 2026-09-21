@@ -1,8 +1,8 @@
-package com.example.movie_review.repository;
+package com.example.movie_service.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.movie_review.model.Movie;
+import com.example.movie_service.model.Movie;
 
 public interface  MovieRepository extends JpaRepository<Movie, Long>{
     boolean existsByTitleIgnoreCaseAndReleaseYear(String title, int releaseYear);

@@ -1,4 +1,4 @@
-package com.example.movie_review.controller;
+package com.example.movie_service.controller;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.movie_review.exception.DuplicateResourceException;
-import com.example.movie_review.exception.ResourceNotFoundException;
-import com.example.movie_review.model.Movie;
-import com.example.movie_review.repository.MovieRepository;
+import com.example.movie_service.exception.DuplicateResourceException;
+import com.example.movie_service.exception.ResourceNotFoundException;
+import com.example.movie_service.model.Movie;
+import com.example.movie_service.repository.MovieRepository;
 
 @RestController
 @RequestMapping("/api/movies")
