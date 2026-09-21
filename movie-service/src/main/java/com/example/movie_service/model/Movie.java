@@ -1,5 +1,6 @@
 package com.example.movie_service.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,15 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="movies")
+@Table(name = "movies")
 public class Movie {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    private String title, genre;
+    @Column(name = "title", nullable = false)
+    private String title;
 
+    @Column(name = "release_year", nullable = false)
     private int releaseYear;
+
+    @Column(name = "genre", nullable = false)
+    private String genre;
 
     public Movie(){
 
