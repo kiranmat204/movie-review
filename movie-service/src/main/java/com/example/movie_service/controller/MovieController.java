@@ -19,6 +19,8 @@ import com.example.movie_service.exception.MovieNotFoundException;
 import com.example.movie_service.model.Movie;
 import com.example.movie_service.repository.MovieRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/movies")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -47,7 +49,7 @@ public class MovieController {
 
     // This method creates a new movie
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
+    public ResponseEntity<Movie> createMovie(@Valid @RequestBody Movie movie) {
 
         // checks for duplicate title and year entries
         if (movieRepository.existsByTitleIgnoreCaseAndReleaseYear(
@@ -68,7 +70,7 @@ public class MovieController {
 
     // This method updates movie title/releaseYear/genre
     @PutMapping("/{id}")
-    public Movie updateMovie(@PathVariable Long id, @RequestBody Movie updatedMovie) {
+    public Movie updateMovie(@PathVariable Long id, @Valid @RequestBody Movie updatedMovie) {
 
         Movie movie = movieRepository
                 .findById(id)

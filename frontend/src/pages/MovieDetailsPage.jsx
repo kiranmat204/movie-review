@@ -32,6 +32,28 @@ function MovieDetailsPage() {
   const [reviewError, setReviewError] = useState("");
   const [saveError, setSaveError] = useState("");
 
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSubmitError, setReviewSubmitError] = useState("");
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [deletingReviewId, setDeletingReviewId] = useState(null);
+  const [reviewForm, setReviewForm] = useState({
+    reviewerName: "",
+    rating: "5",
+    comment: ""
+  });
+
+  const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [reviewDeleteError, setReviewDeleteError] = useState("");
+
+  const filteredReviews =
+    ratingFilter === "all"
+      ? reviews
+      : reviews.filter(
+          (review) =>
+            review.rating === Number(ratingFilter)
+        );
+
   // Loads the selected movie from the movie service
   async function loadMovie() {
     try {
@@ -202,6 +224,150 @@ function MovieDetailsPage() {
       setDeleteError(exception.message);
     } finally {
       setDeleting(false);
+    }
+  }
+
+  // Updates a field in the create review form
+  function handleReviewChange(event) {
+    const { name, value } = event.target;
+
+    setReviewForm((currentForm) => ({
+      ...currentForm,
+      [name]: value
+    }));
+  }
+
+  // Creates a review using the review service
+  async function handleCreateReview(event) {
+    event.preventDefault();
+
+    try {
+      setSubmittingReview(true);
+      setReviewSubmitError("");
+
+      const response = await fetch(
+        `${REVIEW_API_URL}/${movieId}/reviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            reviewerName:
+              reviewForm.reviewerName.trim(),
+            rating: Number(reviewForm.rating),
+            comment: reviewForm.comment.trim()
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => null);
+
+        throw new Error(
+          errorData?.error ||
+            errorData?.message ||
+            "Unable to create review"
+        );
+      }
+
+      const createdReview = await response.json();
+
+      setReviews((currentReviews) => [
+        createdReview,
+        ...currentReviews
+      ]);
+
+      setReviewForm({
+        reviewerName: "",
+        rating: "5",
+        comment: ""
+      });
+
+      setShowReviewForm(false);
+    } catch (exception) {
+      setReviewSubmitError(exception.message);
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
+  // Opens the review form and clears old errors
+  function openReviewForm() {
+    setReviewSubmitError("");
+    setShowReviewForm(true);
+  }
+
+  // Cancels creating a review
+  function cancelReviewForm() {
+    setReviewSubmitError("");
+    setShowReviewForm(false);
+
+    setReviewForm({
+      reviewerName: "",
+      rating: "5",
+      comment: ""
+    });
+  }
+
+  // Opens the delete confirmation for a review
+  function openReviewDeleteModal(review) {
+    setReviewDeleteError("");
+    setReviewToDelete(review);
+  }
+
+  // Closes the review delete confirmation
+  function closeReviewDeleteModal() {
+    if (!deletingReviewId) {
+      setReviewDeleteError("");
+      setReviewToDelete(null);
+    }
+  }
+
+  // Deletes the selected review from the review service
+  async function handleDeleteReview(event) {
+    event.preventDefault();
+
+    if (!reviewToDelete) {
+      return;
+    }
+
+    try {
+      setDeletingReviewId(reviewToDelete.id);
+      setReviewDeleteError("");
+
+      const response = await fetch(
+        `${REVIEW_API_URL}/${movieId}/reviews/${reviewToDelete.id}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => null);
+
+        throw new Error(
+          errorData?.error ||
+            errorData?.message ||
+            "Unable to delete review"
+        );
+      }
+
+      setReviews((currentReviews) =>
+        currentReviews.filter(
+          (review) => review.id !== reviewToDelete.id
+        )
+      );
+
+      setReviewToDelete(null);
+    } catch (exception) {
+      setReviewDeleteError(exception.message);
+    } finally {
+      setDeletingReviewId(null);
     }
   }
 
@@ -419,6 +585,7 @@ function MovieDetailsPage() {
               <div className="reviews-heading">
                 <div>
                   <h2>Reviews</h2>
+
                   <p>
                     {reviews.length}{" "}
                     {reviews.length === 1
@@ -426,7 +593,128 @@ function MovieDetailsPage() {
                       : "reviews"}
                   </p>
                 </div>
+
+                <div className="review-controls">
+                  <label className="rating-filter">
+                    <span>Rating</span>
+
+                    <select
+                      value={ratingFilter}
+                      onChange={(event) =>
+                        setRatingFilter(event.target.value)
+                      }
+                    >
+                      <option value="all">All ratings</option>
+                      <option value="5">5 stars</option>
+                      <option value="4">4 stars</option>
+                      <option value="3">3 stars</option>
+                      <option value="2">2 stars</option>
+                      <option value="1">1 star</option>
+                    </select>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="add-review-button"
+                    onClick={openReviewForm}
+                  >
+                    + Add review
+                  </button>
+                </div>
               </div>
+
+              {showReviewForm && (
+                <form
+                  className="review-form"
+                  onSubmit={handleCreateReview}
+                >
+                  <div className="review-form-heading">
+                    <div>
+                      <h3>Add a review</h3>
+                      <p>Share your thoughts about this movie.</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="close-button"
+                      onClick={cancelReviewForm}
+                      aria-label="Close review form"
+                      disabled={submittingReview}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {reviewSubmitError && (
+                    <div className="error-message form-error">
+                      {reviewSubmitError}
+                    </div>
+                  )}
+
+                  <div className="review-form-fields">
+                    <label>
+                      Your name
+                      <input
+                        type="text"
+                        name="reviewerName"
+                        value={reviewForm.reviewerName}
+                        onChange={handleReviewChange}
+                        placeholder="Enter your name"
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      Rating
+                      <select
+                        name="rating"
+                        value={reviewForm.rating}
+                        onChange={handleReviewChange}
+                        required
+                      >
+                        <option value="5">5 — Excellent</option>
+                        <option value="4">4 — Good</option>
+                        <option value="3">3 — Average</option>
+                        <option value="2">2 — Poor</option>
+                        <option value="1">1 — Very poor</option>
+                      </select>
+                    </label>
+
+                    <label className="review-comment-field">
+                      Comment
+                      <textarea
+                        name="comment"
+                        value={reviewForm.comment}
+                        onChange={handleReviewChange}
+                        placeholder="Write your review..."
+                        rows="5"
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  <div className="review-form-actions">
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={cancelReviewForm}
+                      disabled={submittingReview}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="submit-button"
+                      disabled={submittingReview}
+                    >
+                      {submittingReview
+                        ? "Submitting..."
+                        : "Submit review"}
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {loadingReviews && (
                 <p className="status-message">
@@ -445,39 +733,62 @@ function MovieDetailsPage() {
                 reviews.length === 0 && (
                   <div className="empty-state">
                     <h3>No reviews yet</h3>
+                    <p>Be the first person to review this movie.</p>
+                  </div>
+                )}
+
+              {!loadingReviews &&
+                !reviewError &&
+                reviews.length > 0 &&
+                filteredReviews.length === 0 && (
+                  <div className="empty-state">
+                    <h3>No matching reviews</h3>
                     <p>
-                      This movie has not been reviewed yet.
+                      There are no {ratingFilter}-star reviews for
+                      this movie.
                     </p>
                   </div>
                 )}
 
               {!loadingReviews &&
                 !reviewError &&
-                reviews.length > 0 && (
+                filteredReviews.length > 0 && (
                   <div className="review-list">
-                    {reviews.map((review) => (
+                    {filteredReviews.map((review) => (
                       <article
                         className="review-card"
                         key={review.id}
                       >
                         <div className="review-card-heading">
-                          <h3>{review.reviewerName}</h3>
+                          <div className="review-author">
+                            <h3>{review.reviewerName}</h3>
 
-                          <span
-                            className="review-rating"
-                            aria-label={`${review.rating} out of 5 stars`}
-                          >
-                            {"★".repeat(review.rating)}
+                            <span
+                              className="review-rating"
+                              aria-label={`${review.rating} out of 5 stars`}
+                            >
+                              {"★".repeat(Number(review.rating))}
 
-                            <span>
-                              {"★".repeat(
-                                5 - review.rating
-                              )}
+                              <span className="empty-stars">
+                                {"☆".repeat(5 - Number(review.rating))}
+                              </span>
                             </span>
-                          </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="review-delete-button"
+                            onClick={() => openReviewDeleteModal(review)}
+                            disabled={deletingReviewId === review.id}
+                            title="Delete review"
+                            aria-label={`Delete review by ${review.reviewerName}`}
+                          >
+                            🗑
+                          </button>
                         </div>
 
                         <p>{review.comment}</p>
+                        <hr className="review-divider" />
                       </article>
                     ))}
                   </div>
@@ -486,6 +797,8 @@ function MovieDetailsPage() {
           </>
         )}
       </main>
+      
+      {/* Delete Modal to show user before confirming movie deletion */}
       {showDeleteConfirm && (
         <div
           className="modal-overlay"
@@ -540,6 +853,67 @@ function MovieDetailsPage() {
                 disabled={deleting}
               >
                 {deleting ? "Deleting..." : "Delete movie"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      {/* Review delete modal */}
+      {reviewToDelete && (
+        <div
+          className="modal-overlay"
+          onMouseDown={closeReviewDeleteModal}
+        >
+          <form
+            className="delete-confirmation"
+            onSubmit={handleDeleteReview}
+            onMouseDown={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-review-title"
+          >
+            <div className="delete-warning-icon">!</div>
+
+            <h2 id="delete-review-title">
+              Delete review?
+            </h2>
+
+            <p>
+              Are you sure you want to delete the review by{" "}
+              <strong>
+                {reviewToDelete.reviewerName}
+              </strong>
+              ?
+            </p>
+
+            <p className="delete-warning-text">
+              This action cannot be undone.
+            </p>
+
+            {reviewDeleteError && (
+              <div className="error-message form-error">
+                {reviewDeleteError}
+              </div>
+            )}
+
+            <div className="delete-confirmation-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={closeReviewDeleteModal}
+                disabled={deletingReviewId !== null}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="confirm-delete-button"
+                disabled={deletingReviewId !== null}
+              >
+                {deletingReviewId !== null
+                  ? "Deleting..."
+                  : "Delete review"}
               </button>
             </div>
           </form>

@@ -6,6 +6,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "movies")
@@ -14,18 +18,25 @@ public class Movie {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Movie title is required")
+    @Size(max = 200, message = "Movie title cannot exceed 200 characters")
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Min(value = 1888, message = "Release year must be 1888 or later")
+    @Max(value = 2100, message = "Release year cannot be later than 2100")
     @Column(name = "release_year", nullable = false)
     private int releaseYear;
 
+    @NotBlank(message = "Genre is required")
+    @Size(max = 100, message = "Genre cannot exceed 100 characters")
     @Column(name = "genre", nullable = false)
     private String genre;
 
     @Column(name = "poster_url")
     private String posterUrl;
 
+    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     @Column(name = "description", length = 2000)
     private String description;
 
