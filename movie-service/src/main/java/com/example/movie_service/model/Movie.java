@@ -23,6 +23,12 @@ public class Movie {
     @Column(name = "genre", nullable = false)
     private String genre;
 
+    @Column(name = "poster_url")
+    private String posterUrl;
+
+    @Column(name = "description", length = 2000)
+    private String description;
+
     public Movie(){
 
     }
@@ -31,6 +37,13 @@ public class Movie {
         this.title = title;
         this.releaseYear = releaseYear;
         this.genre = genre;
+    }
+
+    public Movie(String title, int releaseYear, String genre, String posterUrl) {
+        this.title = title;
+        this.releaseYear = releaseYear;
+        this.genre = genre;
+        this.posterUrl = posterUrl;
     }
 
     public Long getId() {
@@ -63,5 +76,21 @@ public class Movie {
 
     public void setGenre(String genre) {
         this.genre = genre;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
