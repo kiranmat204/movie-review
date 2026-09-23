@@ -46,18 +46,37 @@ function CreateMovieForm({ onCreated, onCancel }) {
         })
       });
 
+      // Handles an HTTP error returned by movie-service
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
+        const errorData = await response
+          .json()
+          .catch(() => null);
 
+        if (response.status >= 500) {
+          throw new Error(
+            "Movie service is currently unavailable. Please try again later."
+          );
+        }
+
+        // Handles duplicate movies and validation errors
         throw new Error(
-          errorData?.error || "Unable to create movie"
+          errorData?.error ||
+            errorData?.message ||
+            "Unable to create movie"
         );
       }
 
       const createdMovie = await response.json();
+
       await onCreated(createdMovie);
     } catch (exception) {
-      setError(exception.message);
+      if (exception instanceof TypeError) {
+        setError(
+          "Movie service is currently unavailable. Please try again later."
+        );
+      } else {
+        setError(exception.message);
+      }
     } finally {
       setSubmitting(false);
     }

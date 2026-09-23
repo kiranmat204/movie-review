@@ -693,6 +693,91 @@
 
 /* Create review form */
 
+.review-form {
+  margin-bottom: 20px;
+  padding: 20px;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 12px;
+
+  background: white;
+  box-shadow: 0 4px 14px rgba(29, 42, 68, 0.05);
+}
+
+.review-form-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.review-form-heading h3 {
+  margin: 0;
+  color: #172033;
+}
+
+.review-form-heading p {
+  margin: 5px 0 0;
+  color: #7b8495;
+  font-size: 0.85rem;
+}
+
+.review-form-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.review-form-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  color: #33405a;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.review-form-fields input,
+.review-form-fields select,
+.review-form-fields textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+
+  border: 1px solid #cbd2dc;
+  border-radius: 8px;
+  outline: none;
+
+  background: white;
+  color: #172033;
+  font: inherit;
+}
+
+.review-form-fields textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.review-form-fields input:focus,
+.review-form-fields select:focus,
+.review-form-fields textarea:focus {
+  border-color: #4968db;
+  box-shadow: 0 0 0 3px rgba(73, 104, 219, 0.12);
+}
+
+.review-comment-field {
+  grid-column: 1 / -1;
+}
+
+.review-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 /* Review card layout */
 
 .review-card {

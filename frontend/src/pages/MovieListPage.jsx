@@ -42,8 +42,8 @@ function MovieListPage() {
 
     // Reloads the list after a movie has been created
     async function handleMovieCreated() {
-    await loadMovies();
-    setView("list");
+        await loadMovies();
+        setView("list");
     }
 
     useEffect(() => {

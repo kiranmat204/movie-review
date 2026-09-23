@@ -96,13 +96,25 @@ function MovieDetailsPage() {
       );
 
       if (!response.ok) {
+        if (response.status >= 500) {
+          throw new Error(
+            "Review service is currently unavailable. Reviews cannot be loaded."
+          );
+        }
+
         throw new Error("Unable to load reviews");
       }
 
       const data = await response.json();
       setReviews(data);
     } catch (exception) {
-      setReviewError(exception.message);
+      if (exception instanceof TypeError) {
+        setReviewError(
+          "Review service is currently unavailable. Reviews cannot be loaded."
+        );
+      } else {
+        setReviewError(exception.message);
+      }
     } finally {
       setLoadingReviews(false);
     }
@@ -261,10 +273,17 @@ function MovieDetailsPage() {
         }
       );
 
+      // Handles an HTTP error returned by the service
       if (!response.ok) {
         const errorData = await response
           .json()
           .catch(() => null);
+
+        if (response.status >= 500) {
+          throw new Error(
+            "Review service is currently unavailable. Please try again later."
+          );
+        }
 
         throw new Error(
           errorData?.error ||
@@ -275,6 +294,7 @@ function MovieDetailsPage() {
 
       const createdReview = await response.json();
 
+      // Adds the new review to the displayed list
       setReviews((currentReviews) => [
         createdReview,
         ...currentReviews
@@ -288,7 +308,13 @@ function MovieDetailsPage() {
 
       setShowReviewForm(false);
     } catch (exception) {
-      setReviewSubmitError(exception.message);
+      if (exception instanceof TypeError) {
+        setReviewSubmitError(
+          "Review service is currently unavailable. Please try again later."
+        );
+      } else {
+        setReviewSubmitError(exception.message);
+      }
     } finally {
       setSubmittingReview(false);
     }
